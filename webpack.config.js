@@ -5,7 +5,7 @@ const path = require('path');
 
 let config = {
 	mode: process.env.MODE,
-	entry: './docs/assets/js/src/main.js',
+	entry: './docs/assets/js/src/codebook.js',
 	output: {
 		path: path.resolve(__dirname, 'docs/assets/js/dist'),
 		filename: 'bundle.js',
