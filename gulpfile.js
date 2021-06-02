@@ -7,7 +7,7 @@ const gulp = require('gulp');
 //////////////////////
 const webpack = require('webpack-stream');
 
-const jsEntryPoints = 'docs/assets/js/src/codebook.js';
+const jsEntryPoints = 'docs/assets/js/src/main.js';
 const jsSrcDir = 'docs/assets/js/src';
 const jsOutputDir = 'docs/assets/js/dist';
 
