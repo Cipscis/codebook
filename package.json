@@ -1,0 +1,25 @@
+{
+	"name": "base-package",
+	"version": "0.1.0",
+	"description": "This is my base project to use when creating new packages.",
+	"private": true,
+	"browser": "./main.js",
+	"files": [
+		"main.js"
+	],
+	"scripts": {
+		"server": "node server/server.js",
+		"watch": "gulp",
+		"start": "concurrently --kill-others \"npm run server\" \"npm run watch\""
+	},
+	"author": "Mark Hanna",
+	"license": "Hippocratic-2.1",
+	"devDependencies": {
+		"concurrently": "^6.1.0",
+		"dotenv": "^10.0.0",
+		"express": "^4.17.1",
+		"gulp": "^4.0.2",
+		"gulp-sass": "^4.1.0",
+		"webpack-stream": "^6.1.2"
+	}
+}
