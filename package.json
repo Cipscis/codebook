@@ -1,11 +1,11 @@
 {
-	"name": "base-package",
+	"name": "codebook",
 	"version": "0.1.0",
-	"description": "This is my base project to use when creating new packages.",
+	"description": "Execute code that is also shown to the user embedded in an HTML page.",
 	"private": true,
-	"browser": "./main.js",
+	"browser": "./codebook.js",
 	"files": [
-		"main.js"
+		"codebook.js"
 	],
 	"scripts": {
 		"server": "node server/server.js",

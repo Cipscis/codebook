@@ -3,6 +3,6 @@
 // even though it is the root for the server
 // both locally and on GitHub Pages
 
-import foo from '/main.js';
+import codebook from '/codebook.js';
 
-foo('example code goes here');
+console.log(codebook);
