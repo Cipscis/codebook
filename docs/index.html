@@ -15,31 +15,23 @@
 
 				<p><a href="changelog">Changelog</a></p>
 
-				<p>Explain what your package does.</p>
+				<p>Execute code that is also shown to the user embedded in an HTML page.</p>
 			</div>
 		</section>
 
-		<section>
+		<section class="js-codebook__set" data-codebook-set="example">
 			<div class="content">
-				<h2>Method</h2>
+				<h2>Usage:</h2>
 
-				<code>method(argA, argB)</code>
+				<code>import codebook from 'codebook';
 
-				<p>Explain what the method does.</p>
+codebook();</code>
 
-				<h3>Arguments</h3>
+				<script type="text/plain" class="codebook__code js-codebook__code" data-codebook-log="log-example">
+					log('test');
+				</script>
 
-				<h4>argA</h4>
-
-				<p>Explain what the argument does.</p>
-
-				<h4>argB</h4>
-
-				<p>Explain what the argument does.</p>
-
-				<h3>Examples</h3>
-
-				<p>Put an example here, using code in <code>/docs/assets/js/src/main.js</code>.</p>
+				<samp id="log-example"></samp>
 			</div>
 		</section>
 	</main>

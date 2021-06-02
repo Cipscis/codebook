@@ -5,4 +5,4 @@
 
 import codebook from '/codebook.js';
 
-console.log(codebook);
+codebook();
