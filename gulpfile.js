@@ -18,7 +18,10 @@ const buildJs = function () {
 };
 
 const watchJs = function () {
-	gulp.watch(`${jsSrcDir}/**/*.js`, buildJs);
+	gulp.watch([
+		'*.js',
+		`${jsSrcDir}/**/*.js`,
+	], buildJs);
 };
 
 //////////////////////
