@@ -1,6 +1,5 @@
 const selectors = Object.freeze({
 	code: '.js-codebook__code',
-	source: '.js-codebook__source',
 	style: '.js-codebook__style',
 	set: '.js-codebook__set',
 });
@@ -10,6 +9,8 @@ const dataSelectors = Object.freeze({
 	index: 'data-codebook-index',
 
 	log: 'data-codebook-log',
+
+	// TODO: Rename this so it's not chart-specific, just about rendering arbitrary HTML
 	chart: 'data-codebook-chart',
 });
 
@@ -39,7 +40,7 @@ const module = {
 
 	_tidyCode: function () {
 		// Adjust indentation so it appears correctly on the page
-		let $code = document.querySelectorAll(`${selectors.code}, ${selectors.source}, ${selectors.style}`);
+		let $code = document.querySelectorAll(`${selectors.code}, ${selectors.style}`);
 
 		$code.forEach($el => {
 			let code = $el.innerHTML;
@@ -57,7 +58,7 @@ const module = {
 	},
 
 	_createCodeSets: function (args) {
-		let $code = document.querySelectorAll(`${selectors.code}, ${selectors.source}`);
+		let $code = document.querySelectorAll(selectors.code);
 		let setNames = [];
 		let sets = {};
 
@@ -73,11 +74,7 @@ const module = {
 				set = sets[setName];
 			}
 
-			if ($el.matches(selectors.source)) {
-				set.source.push($el);
-			} else {
-				set.code.push($el);
-			}
+			set.code.push($el);
 		});
 
 		for (let setName in sets) {
@@ -106,14 +103,13 @@ const module = {
 
 	_newSet: function (args) {
 		return {
-			source: [],
 			code: [],
 			args,
 		};
 	},
 
 	_runNullSet: function (set) {
-		// Null sets have no log or chart functions, or "source" snippets
+		// Null sets have no log or chart functions snippets
 
 		let code = set.code.reduce(module._combineCode, '');
 
@@ -124,7 +120,6 @@ const module = {
 
 	_runSet: function (set) {
 		let code = set.code.reduce(module._combineCode, '');
-		let source = set.source.reduce(module._combineCode, '');
 		let args = set.args;
 
 		let argNames = [];
@@ -136,10 +131,8 @@ const module = {
 			argValues.push(arg);
 		}
 
-		// TODO: Uncouple from Charter etc.
-		// TODO: Allow custom arguments to be passed through
-		let fileLoadedFnFactory = Function.apply(null, argNames.concat(['_log', '_chart', `
-			return function (_data) {
+		let fnFactory = Function.apply(null, argNames.concat(['_log', '_chart', `
+			return async () => {
 				'use strict';
 
 				let _$log = null;
@@ -148,27 +141,13 @@ const module = {
 				let _$chart = null;
 				let chart = function () {};
 
-				if (_data) {
-					var rows = _data.rows;
-					var cols = _data.cols;
-					var enums = _data.enums;
-					var aliases = _data.aliases;
-				}
-
 				${code}
-			}
+			};
 		`]));
 
-		let fileLoadedFn = fileLoadedFnFactory.apply(null, argValues.concat([module._logOutput, module._chartOutput]));
+		let fn = fnFactory.apply(null, argValues.concat([module._logOutput, module._chartOutput]));
 
-		// TODO: Uncouple from Charter etc.
-		// TODO: Allow some blocks to be delayed until after a Promise resolves
-		if (source) {
-			let loadSrcFn = new Function ('analyseData', source);
-			loadSrcFn(fileLoadedFn);
-		} else {
-			fileLoadedFn();
-		}
+		fn();
 	},
 
 	_combineCode: function (allCode, $newCode) {

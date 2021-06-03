@@ -25,13 +25,16 @@
 
 				<code>import codebook from 'codebook';
 
-codebook();</code>
+codebook.run({
+	testArg: 'test',
+});</code>
 
 				<script type="text/plain" class="codebook__code js-codebook__code" data-codebook-log="log-example">
-					log(testArg);
+					let json = await fetch('https://jsonplaceholder.typicode.com/todos/1').then(response => response.json());
+					log(json);
 				</script>
 
-				<samp id="log-example"></samp>
+				<samp class="codebook__log" id="log-example"></samp>
 			</div>
 		</section>
 	</main>
