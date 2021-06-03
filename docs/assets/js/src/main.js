@@ -5,4 +5,6 @@
 
 import codebook from '/codebook.js';
 
-codebook();
+codebook.run({
+	testArg: 'test',
+});

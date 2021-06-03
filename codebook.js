@@ -14,10 +14,12 @@ const dataSelectors = Object.freeze({
 });
 
 const module = {
-	init: function () {
+	run: function (args) {
+		args = args || {};
+
 		module._tidyCode();
 
-		let sets = module._createCodeSets();
+		let sets = module._createCodeSets(args);
 
 		if (sets[null]) {
 			// Code without a set runs first, and is available to all sets
@@ -54,7 +56,7 @@ const module = {
 		});
 	},
 
-	_createCodeSets: function () {
+	_createCodeSets: function (args) {
 		let $code = document.querySelectorAll(`${selectors.code}, ${selectors.source}`);
 		let setNames = [];
 		let sets = {};
@@ -65,7 +67,7 @@ const module = {
 			if (setNames.indexOf(setName) === -1) {
 				setNames.push(setName);
 
-				set = module._newSet();
+				set = module._newSet(args);
 				sets[setName] = set;
 			} else {
 				set = sets[setName];
@@ -102,10 +104,11 @@ const module = {
 		return sets;
 	},
 
-	_newSet: function () {
+	_newSet: function (args) {
 		return {
 			source: [],
-			code: []
+			code: [],
+			args,
 		};
 	},
 
@@ -122,10 +125,20 @@ const module = {
 	_runSet: function (set) {
 		let code = set.code.reduce(module._combineCode, '');
 		let source = set.source.reduce(module._combineCode, '');
+		let args = set.args;
+
+		let argNames = [];
+		let argValues = [];
+		for (let argName in args) {
+			let arg = args[argName];
+
+			argNames.push(argName);
+			argValues.push(arg);
+		}
 
 		// TODO: Uncouple from Charter etc.
 		// TODO: Allow custom arguments to be passed through
-		let fileLoadedFnFactory = new Function('_log', '_chart', `
+		let fileLoadedFnFactory = Function.apply(null, argNames.concat(['_log', '_chart', `
 			return function (_data) {
 				'use strict';
 
@@ -144,9 +157,9 @@ const module = {
 
 				${code}
 			}
-		`);
+		`]));
 
-		let fileLoadedFn = fileLoadedFnFactory(module._logOutput, module._chartOutput);
+		let fileLoadedFn = fileLoadedFnFactory.apply(null, argValues.concat([module._logOutput, module._chartOutput]));
 
 		// TODO: Uncouple from Charter etc.
 		// TODO: Allow some blocks to be delayed until after a Promise resolves
@@ -251,4 +264,8 @@ const module = {
 	}
 };
 
-export default module.init;
+const codebook = {
+	run: module.run,
+};
+
+export default codebook;
