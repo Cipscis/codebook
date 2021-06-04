@@ -1,25 +1,23 @@
 const selectors = Object.freeze({
 	code: '.js-codebook__code',
-	style: '.js-codebook__style',
 	set: '.js-codebook__set',
+
+	inert: '.js-codebook__inert',
 });
 
-const dataSelectors = Object.freeze({
+const dataAttributes = Object.freeze({
 	set: 'data-codebook-set',
 	index: 'data-codebook-index',
 
 	log: 'data-codebook-log',
-
-	// TODO: Rename this so it's not chart-specific, just about rendering arbitrary HTML
-	chart: 'data-codebook-chart',
+	html: 'data-codebook-html',
 });
+
+// Create a single textarea element for decoding HTML
+const $textarea = document.createElement('textarea');
 
 const module = {
 	run: function (args) {
-		args = args || {};
-
-		module._tidyCode();
-
 		let sets = module._createCodeSets(args);
 
 		if (sets[null]) {
@@ -38,11 +36,21 @@ const module = {
 		}
 	},
 
-	_tidyCode: function () {
-		// Adjust indentation so it appears correctly on the page
-		let $code = document.querySelectorAll(`${selectors.code}, ${selectors.style}`);
+	runSet: function (setName, args) {
+		let sets = module._createCodeSets(args);
 
-		$code.forEach($el => {
+		if (setName in sets) {
+			let set = sets[setName];
+
+			module._runSet(set);
+		}
+	},
+
+	tidy: function () {
+		// Adjust indentation so it appears correctly on the page
+		let $code = document.querySelectorAll(`${selectors.code}, ${selectors.inert}`);
+
+		for (let $el of $code) {
 			let code = $el.innerHTML;
 			// Look for tab indentation only
 			let match = code.match(/^(\t*)\S/m);
@@ -54,15 +62,28 @@ const module = {
 
 				$el.innerHTML = code.replace(pattern, '').trim();
 			}
-		});
+		};
 	},
 
 	_createCodeSets: function (args) {
+		let sets = module._gatherSetBlocks(args);
+
+		// Loop through created sets and sort their blocks by index
+		for (let setName in sets) {
+			let set = sets[setName];
+			module._sortCodeBlocks(set);
+		};
+
+		return sets;
+	},
+
+	_gatherSetBlocks: function (args) {
 		let $code = document.querySelectorAll(selectors.code);
 		let setNames = [];
 		let sets = {};
 
-		$code.forEach($el => {
+		// Loop through all elements and add them to the right set
+		for (let $el of $code) {
 			let setName = module._getSetName($el);
 			let set;
 			if (setNames.indexOf(setName) === -1) {
@@ -75,41 +96,42 @@ const module = {
 			}
 
 			set.code.push($el);
-		});
-
-		for (let setName in sets) {
-			let set = sets[setName];
-
-			// If any sets have an explicit index, sort them
-			set.code.sort(($codeA, $codeB) => {
-				let iA = $codeA.getAttribute(dataSelectors.index);
-				let iB = $codeB.getAttribute(dataSelectors.index);
-
-				if (iA === iB) {
-					return 0; // Leave the order unchanged
-				} else if (iA !== null && iB === null) {
-					return -1; // Put $codeA first
-				} else if (iA === null && iB !== null) {
-					return +1; // Put $codeB first
-				} else {
-					// Neither index is null
-					return iA - iB; // Put the code with the lower index first
-				}
-			});
 		};
 
 		return sets;
 	},
 
+	_sortCodeBlocks: function (set) {
+		// If any blocks have an explicit index, sort them
+		set.code.sort(($codeA, $codeB) => {
+			let iA = $codeA.getAttribute(dataAttributes.index);
+			let iB = $codeB.getAttribute(dataAttributes.index);
+
+			if (iA === iB) {
+				return 0; // Leave the order unchanged
+			} else if (iA !== null && iB === null) {
+				return -1; // Put $codeA first
+			} else if (iA === null && iB !== null) {
+				return +1; // Put $codeB first
+			} else {
+				// Neither index is null
+				return iA - iB; // Put the code with the lower index first
+			}
+		});
+	},
+
 	_newSet: function (args) {
+		args = args || {};
+
 		return {
 			code: [],
-			args,
+			args: Object.assign({}, args),
 		};
 	},
 
 	_runNullSet: function (set) {
-		// Null sets have no log or chart functions snippets
+		// TODO: Allow null set to have output methods
+		// Null sets have no output methods
 
 		let code = set.code.reduce(module._combineCode, '');
 
@@ -122,38 +144,51 @@ const module = {
 		let code = set.code.reduce(module._combineCode, '');
 		let args = set.args;
 
-		let argNames = [];
-		let argValues = [];
-		for (let argName in args) {
-			let arg = args[argName];
+		let [argNames, argValues] = module._spreadArgs(args);
 
-			argNames.push(argName);
-			argValues.push(arg);
-		}
-
-		let fnFactory = Function.apply(null, argNames.concat(['_log', '_chart', `
+		let fnFactory = Function.apply(null, argNames.concat(['_log', '_html', `
 			return async () => {
 				'use strict';
 
 				let _$log = null;
 				let log = function () {};
 
-				let _$chart = null;
-				let chart = function () {};
+				let _$html = null;
+				let html = function () {};
 
 				${code}
 			};
 		`]));
 
-		let fn = fnFactory.apply(null, argValues.concat([module._logOutput, module._chartOutput]));
+		let fn = fnFactory.apply(null, argValues.concat([module._logOutput, module._htmlOutput]));
 
 		fn();
+	},
+
+	_spreadArgs: function (args) {
+		// Takes in an object and spreads it into
+		// an array of names and an array of values
+
+		let names = [];
+		let values = [];
+
+		for (let name in args) {
+			let arg = args[name];
+
+			names.push(name);
+			values.push(arg);
+		}
+
+		return [
+			names,
+			values,
+		];
 	},
 
 	_combineCode: function (allCode, $newCode) {
 		let newCode = module._decodeHtml($newCode.innerHTML);
 
-		let logId = $newCode.getAttribute(dataSelectors.log);
+		let logId = $newCode.getAttribute(dataAttributes.log);
 		if (logId) {
 			newCode = `
 				_$log = document.getElementById('${logId}');
@@ -167,17 +202,17 @@ const module = {
 			`;
 		}
 
-		let chartId = $newCode.getAttribute(dataSelectors.chart);
-		if (chartId) {
+		let htmlId = $newCode.getAttribute(dataAttributes.html);
+		if (htmlId) {
 			newCode = `
-				_$chart = document.getElementById('${chartId}');
-				chart = function (output) {
-					_chart(output, _$chart);
+				_$html = document.getElementById('${htmlId}');
+				html = function (output) {
+					_html(output, _$html);
 				};
 
 				${newCode}
 
-				chart = function () {};
+				html = function () {};
 			`;
 		}
 
@@ -187,13 +222,13 @@ const module = {
 	},
 
 	_getSetName: function ($el) {
-		let setName = $el.getAttribute(dataSelectors.set);
+		let setName = $el.getAttribute(dataAttributes.set);
 
 		if (!setName) {
 			let $parent = $el.closest(selectors.set);
 
 			if ($parent) {
-				setName = $parent.getAttribute(dataSelectors.set);
+				setName = $parent.getAttribute(dataAttributes.set);
 			}
 		}
 
@@ -225,16 +260,14 @@ const module = {
 		}
 	},
 
-	_chartOutput: function (output, $chart) {
-		if ($chart) {
-			$chart.innerHTML = output;
+	_htmlOutput: function (output, $html) {
+		if ($html) {
+			$html.innerHTML = output;
 		}
 	},
 
 	_decodeHtml: function (htmlString) {
 		// We don't want to see things like =&gt; in code when we really mean =>
-
-		let $textarea = document.createElement('textarea');
 		$textarea.innerHTML = htmlString;
 
 		let decodedString = $textarea.value;
@@ -245,6 +278,9 @@ const module = {
 
 const codebook = {
 	run: module.run,
+	runSet: module.runSet,
+
+	tidy: module.tidy,
 };
 
 export default codebook;
