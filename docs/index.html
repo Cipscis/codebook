@@ -15,27 +15,129 @@
 
 				<p><a href="changelog">Changelog</a></p>
 
-				<p>Execute code that is also shown to the user embedded in an HTML page.</p>
+				<p>Codebook allows you to execute code that is also shown to the user embedded in an HTML page.</p>
+			</div>
+		</section>
+
+		<section>
+			<div class="content">
+				<h2>Install</h2>
+
+				<p>Codebook can be installed as an npm package from GitHub.</p>
+
+				<code class="code--block">npm install github:cipscis/codebook#semver:^1.0.0</code>
+
+				<p>Then, if you are using a package builder like Webpack to allow you to use JavaScript from your <code>node_modules</code> folder, you can import codebook into your module:</p>
+
+				<code class="code--block js-codebook__inert">
+					import codebook from 'codebook';
+				</code>
 			</div>
 		</section>
 
 		<section class="js-codebook__set" data-codebook-set="example">
 			<div class="content">
-				<h2>Usage:</h2>
+				<h2>Usage</h2>
 
-				<code>import codebook from 'codebook';
+				<p>Codebook needs two parts to work: the code on the page that should be run, and the JavaScript to run it.</p>
 
-codebook.run({
-	testArg: 'test',
-});</code>
+				<p>The code on the page comes in <strong>blocks</strong>, which should have a class of <code>js-codebook__code</code>. These blocks can belong to sets, which are run independently.</p>
 
-				<script type="text/plain" class="codebook__code js-codebook__code" data-codebook-log="log-example">
+				<p>By default, a block belongs to a special set called the "null" set. However, it can be added to a set by specifying a set name via a <code>data-codebook-set</code> attribute in one of two places:</p>
+
+				<ul>
+					<li>On the block itself</li>
+					<li>On an ancestor of the code block, with the class <code>js-codebook__set</code></li>
+				</ul>
+
+				<p>A set specified on the block itself will take precedence. Code blocks can only belong to a single set.</p>
+
+				<p>The "null" set is special in that it is executed in the global scope, allowing it to declare variables that can be later accessed by blocks within sets.</p>
+
+				<p>Code blocks in a set have two helper methods exposed that allow them to print output to the page:</p>
+
+				<code>log(...output)</code>
+
+				<p>If a code block has a log output element specified via a <code>data-codebook-log</code> attribute with a value matching the <code>id</code> attribute of the log output element, the <code>log</code> method will print output to that element when called.</p>
+
+				<p>It will attempt to convert <code>Date</code> and <code>Object</code> to strings intelligently, otherwise it will attempt to coerce each value to a string.</p>
+
+				<code>html(string htmlOutput)</code>
+
+				<p>If a code block has an HTML output element specified via a <code>data-codebook-html</code> attribute with a value matching the <code>id</code> attribute of the log output element, the <code>html</code> method will overwrite that element's inner HTML with whatever custom HTML is passed in as the <code>htmlOutput</code> argument.</p>
+			</div>
+
+			<section>
+				<div class="content">
+					<h3>run</h3>
+
+					<code>codebook.run(Object? args);</code>
+
+					<p>The <code>run</code> method runs all sets of code on a page. The "null" set of code, with no defined set, is always run first. Then any remaining sets are run in the order in which they appear on the page.</p>
+
+					<h4>Index</h4>
+
+					<p>Code within a set will run in the order in which it appears in the markup, unless it has a <code>data-codebook-index</code> attribute. This attribute should be an integer, and code with a lower number here will run first. Code blocks with an index will always run before code blocks without an index, and if code blocks have the same index then they will run in the order in which they appear in the markup.</p>
+
+					<h4>Passing arguments</h4>
+
+					<p><code>run</code> takes a single optional argument, which is an <code>Object</code> containing named arguments to be passed to your code. This can be used to expose objects that don't exist on the global scope, such as packages that have been imported into a module.</p>
+
+					<code class="code--block js-codebook__inert">
+						codebook.run({
+							testArg: 'test',
+						});
+					</code>
+				</div>
+			</section>
+
+			<section>
+				<div class="content">
+					<h3>runSet</h3>
+
+					<code>codebook.runSet(string | null setName, Object? args);</code>
+
+					<p>The <code>runSet</code> method allows you to run a specific set of code, instead of all of them. The <code>setName</code> argument should be either a string matching the name of the set, or <code>null</code> to run the "null" set.</p>
+
+					<code class="code--block js-codebook__inert">
+						codebook.runSet('test', { testArg: 'test2' });
+					</code>
+				</div>
+			</section>
+
+			<section>
+				<div class="content">
+					<h3>tidy</h3>
+
+					<code>codebook.tidy();</code>
+
+					<p>The <code>tidy</code> method looks for all codebook code blocks and analyses their shared indentation based on how much the first line of code is indented. Then it strips all lines in that block by the same amount, so code appearing on the page using CSS rules like <code>white-space: pre;</code> won't appear hugely indented, but the source HTML code can still be tidily indented.</p>
+
+					<p>As well as code blocks, the <code>tidy</code> method will also tidy "inert" blocks by looking for elements with a class of <code>js-codebook__inert</code>. These blocks are otherwise ignored by codebook, and it won't try to run any code they contain.</p>
+				</div>
+			</section>
+
+			<section>
+				<div class="content">
+					<h3>Examples</h3>
+
+					<p>This code block has no set, but it does have <code>log</code> and <code>html</code> output elements defined.</p>
+				</div>
+
+				<script type="text/plain" class="codebook__code js-codebook__code" data-codebook-set="test" data-codebook-log="log-example" data-codebook-html="html-example">
+					log(testArg);
+
 					let json = await fetch('https://jsonplaceholder.typicode.com/todos/1').then(response => response.json());
 					log(json);
+
+					let markup = `<button type="button">Arbitrary markup</button>`;
+					html(markup);
 				</script>
 
 				<samp class="codebook__log" id="log-example"></samp>
-			</div>
+
+				<div id="html-example"></div>
+			</section>
 		</section>
 	</main>
 </body>
