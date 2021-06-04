@@ -1,21 +1,24 @@
-.codebook__code {
+.codebook__code,
+.codebook__log {
 	display: block;
-
-	white-space: pre-wrap;
-
-	font-family: monospace;
-	background: #eee;
-	padding: 20px;
 	margin: 20px 0;
+
+	line-height: 1.5;
+
+	background: $grey--lightest;
+	color: $grey--dark;
+
+	padding: 5px 12px;
+	border-radius: 5px;
+	font-family: monospace;
+	white-space: pre-wrap;
+	tab-size: 4;
+	-moz-tab-size: 4;
+
+	max-width: 100%;
+	overflow: auto;
 }
 
 .codebook__log {
-	display: block;
-
-	white-space: pre-wrap;
-
-	font-family: monospace;
-	background: #eee;
-	padding: 20px;
-	margin: 20px 0;
+	box-shadow: inset 0 0 0 3px #ccc;
 }
