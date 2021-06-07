@@ -7,6 +7,6 @@ import codebook from '/codebook.js';
 
 codebook.tidy();
 
-codebook.runSet('test', {
+codebook.run({
 	testArg: 'test',
 });

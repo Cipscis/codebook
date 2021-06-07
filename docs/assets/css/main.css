@@ -1,3 +1,4 @@
+@charset "UTF-8";
 @import url("https://fonts.googleapis.com/css?family=Roboto");
 @import url("https://fonts.googleapis.com/css?family=Roboto+Slab:400,700");
 html, body {
@@ -91,10 +92,21 @@ h1, h2, h3, h4, h5, h6 {
   tab-size: 4;
   -moz-tab-size: 4;
   max-width: 100%;
-  overflow: auto; }
+  overflow: auto;
+  position: relative;
+  padding-top: calc(5px + 1em + 5px); }
+  .codebook__code::before,
+  .codebook__log::before {
+    position: absolute;
+    top: 5px;
+    left: 12px;
+    pointer-events: none; }
 
-.codebook__log {
-  box-shadow: inset 0 0 0 3px #ccc; }
+.codebook__code::before {
+  content: "📖"; }
+
+.codebook__log::before {
+  content: "📝"; }
 
 html {
   font-family: Arial, sans-serif; }

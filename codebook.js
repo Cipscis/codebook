@@ -13,36 +13,56 @@ const dataAttributes = Object.freeze({
 	html: 'data-codebook-html',
 });
 
+const globalSetName = 'global';
+const defaultSetName = 'default';
+
 // Create a single textarea element for decoding HTML
 const $textarea = document.createElement('textarea');
 
+// Required to get AsyncFunction constructor
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncFunction
+const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+
 const module = {
 	run: function (args) {
-		let sets = module._createCodeSets(args);
+		return new Promise((resolve, reject) => {
+			let sets = module._createCodeSets(args);
+			let promises = [];
 
-		if (sets[null]) {
-			// Code without a set runs first, and is available to all sets
-			module._runNullSet(sets[null]);
-		}
-
-		for (let setName in sets) {
-			if (setName === null) {
-				continue;
+			if (sets[globalSetName]) {
+				// Code without a set runs first, and is available to all sets
+				promises.push(module._runGlobalSet(sets[globalSetName]));
 			}
 
-			let set = sets[setName];
+			for (let setName in sets) {
+				if (setName === globalSetName) {
+					continue;
+				}
 
-			module._runSet(set);
-		}
+				let set = sets[setName];
+
+				promises.push(module._runSet(set));
+			}
+
+			Promise.all(promises)
+				.then(resolve)
+				.catch(reject);
+		});
 	},
 
-	runSet: function (setName, args) {
+	runSet: async function (setName, args) {
 		let sets = module._createCodeSets(args);
 
 		if (setName in sets) {
 			let set = sets[setName];
 
-			module._runSet(set);
+			if (setName === globalSetName) {
+				return module._runGlobalSet(set);
+			} else {
+				return module._runSet(set);
+			}
+		} else {
+			throw new RangeError(`Codebook: Cannot run unrecognised set '${setName}'`);
 		}
 	},
 
@@ -129,21 +149,23 @@ const module = {
 		};
 	},
 
-	_runNullSet: function (set) {
-		// TODO: Allow null set to have output methods
-		// Null sets have no output methods
+	_runGlobalSet: function (set) {
+		// TODO: Allow global set to have output methods
+		// The global set has no output methods
 
 		let code = set.code.reduce(module._combineCode, '');
 
-		let nullFn = new Function (code);
+		let globalFn = new AsyncFunction (code);
 
-		nullFn();
+		return globalFn();
 	},
 
 	_runSet: function (set) {
 		let code = set.code.reduce(module._combineCode, '');
-		let args = set.args;
 
+		module._clearLogs(set);
+
+		let args = set.args;
 		let [argNames, argValues] = module._spreadArgs(args);
 
 		let fnFactory = Function.apply(null, argNames.concat(['_log', '_html', `
@@ -162,7 +184,21 @@ const module = {
 
 		let fn = fnFactory.apply(null, argValues.concat([module._logOutput, module._htmlOutput]));
 
-		fn();
+		return fn();
+	},
+
+	_clearLogs: function (set) {
+		for (let $code of set.code) {
+			let logId = $code.getAttribute(dataAttributes.log);
+
+			if (logId) {
+				let $log = document.getElementById(`${logId}`);
+
+				if ($log) {
+					$log.innerHTML = '';
+				}
+			}
+		}
 	},
 
 	_spreadArgs: function (args) {
@@ -229,6 +265,10 @@ const module = {
 
 			if ($parent) {
 				setName = $parent.getAttribute(dataAttributes.set);
+			}
+
+			if (!setName) {
+				setName = defaultSetName;
 			}
 		}
 

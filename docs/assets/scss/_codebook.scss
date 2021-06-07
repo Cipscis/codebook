@@ -17,8 +17,27 @@
 
 	max-width: 100%;
 	overflow: auto;
+
+	position: relative;
+	padding-top: calc(5px + 1em + 5px);
+
+	&::before {
+		position: absolute;
+		top: 5px;
+		left: 12px;
+
+		pointer-events: none;
+	}
+}
+
+.codebook__code {
+	&::before {
+		content: "📖";
+	}
 }
 
 .codebook__log {
-	box-shadow: inset 0 0 0 3px #ccc;
+	&::before {
+		content: "📝";
+	}
 }
