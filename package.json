@@ -1,6 +1,6 @@
 {
 	"name": "codebook",
-	"version": "0.1.0",
+	"version": "1.0.0",
 	"description": "Execute code that is also shown to the user embedded in an HTML page.",
 	"private": true,
 	"browser": "./codebook.js",

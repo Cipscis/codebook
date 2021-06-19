@@ -150,7 +150,6 @@ const module = {
 	},
 
 	_runGlobalSet: function (set) {
-		// TODO: Allow global set to have output methods
 		// The global set has no output methods
 
 		let code = set.code.reduce(module._combineCode, '');
