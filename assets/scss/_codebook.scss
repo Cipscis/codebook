@@ -1,0 +1,43 @@
+.codebook__code,
+.codebook__log {
+	display: block;
+	margin: 20px 0;
+
+	line-height: 1.5;
+
+	background: $grey--lightest;
+	color: $grey--dark;
+
+	padding: 5px 12px;
+	border-radius: 5px;
+	font-family: monospace;
+	white-space: pre-wrap;
+	tab-size: 4;
+	-moz-tab-size: 4;
+
+	max-width: 100%;
+	overflow: auto;
+
+	position: relative;
+	padding-top: calc(5px + 1em + 5px);
+
+	&::before {
+		position: absolute;
+		top: 5px;
+		left: 12px;
+
+		pointer-events: none;
+	}
+}
+
+.codebook__code {
+	&::before {
+		content: "📖";
+	}
+}
+
+.codebook__log {
+	&::before {
+		content: "📝";
+	}
+}

@@ -1,0 +1,53 @@
+html, body {
+	padding: 0;
+	margin: 0;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+ul, ol, dl, dt, dd {
+	margin: 0;
+}
+
+img {
+	display: block;
+	max-width: 100%;
+}
+
+form {
+	margin: 0;
+}
+
+p:first-child {
+	margin-top: 0;
+}
+p:last-child {
+	margin-bottom: 0;
+}
+
+fieldset {
+	padding: 0;
+	margin: 0;
+	border: none;
+}
+
+button, input, select, textarea {
+	font-size: 1rem;
+}
+
+
+@mixin list-reset {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+@mixin button-reset {
+	background: transparent;
+	border: none;
+	border-radius: 0;
+	padding: 0;
+	cursor: pointer;
+}

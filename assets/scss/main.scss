@@ -1,0 +1,17 @@
+@import "theme.scss";
+
+@import "reset.scss";
+
+@import "typography.scss";
+
+@import "content.scss";
+@import "codebook.scss";
+
+html {
+	font-family: Arial, sans-serif;
+}
+
+.layout {
+	max-width: 800px;
+	margin: 60px auto;
+}
