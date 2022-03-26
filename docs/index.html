@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 
 	<link rel="stylesheet" href="/codebook/assets/css/main.css" />
-	<script type="module" src="/codebook/assets/js/dist/bundle.js"></script>
+	<script type="module" src="/codebook/assets/js/dist/docs-script.bundle.js"></script>
 </head>
 <body>
 	<main class="layout">
@@ -19,17 +19,17 @@
 
 		<section class="js-codebook__set">
 			<div class="content">
-				<h2>Usage</h2>
+				<h2 id="usage">Usage <a class="anchor" href="#usage"></a></h2>
 
-				<p>Codebook needs two parts to work: the code on the page that should be run, and the JavaScript to run it.</p>
+				<p>Codebook needs two parts to work: the code on the page that should be run, and the JavaScript to run it (see <a href="#methods">Methods</a>).</p>
 
-				<p>The code on the page comes in <strong>blocks</strong>, which should have a class of <code>js-codebook__code</code>. These blocks can belong to sets, which are run independently.</p>
+				<p>The code on the page comes in <strong>blocks</strong>, which should have a class of <code>js-codebook__block</code>. These blocks can belong to <strong>sets</strong>, which can be run independently.</p>
 
-				<p>On this page, code blocks are marked by a 📖 character.</p>
+				<p>On this page, code blocks are marked by a 📖.</p>
 
-				<h3>Sets</h3>
+				<h3 id="usage-sets">Sets <a class="anchor" href="#usage-sets"></a></h3>
 
-				<p>By default, a block belongs to a special set called the "default" set. However, it can be added to a specific set by specifying a set name via a <code>data-codebook-set</code> attribute in one of two places:</p>
+				<p>By default, a block belongs to a special set with the name "default". However, it can be added to a specific set by specifying a set name via a <code>data-codebook-set</code> attribute in one of two places:</p>
 
 				<ul>
 					<li>On the block itself</li>
@@ -38,49 +38,57 @@
 
 				<p>If a set is specified in both of those places, the set specified on the block itself will take precedence. Code blocks can only belong to a single set.</p>
 
+				<h3 id="usage-helper-methods">Helper Methods <a class="anchor" href="#usage-helper-methods"></a></h3>
+
 				<p>Code blocks in a set have two helper methods exposed that allow them to print output to the page:</p>
 
-				<code>log(...output)</code>
+				<h4 id="usage-helper-methods-log">log <a class="anchor" href="#usage-helper-methods-log"></a></h4>
 
-				<p>If a code block has a log output element specified via a <code>data-codebook-log</code> attribute with a value matching the <code>id</code> attribute of the log output element, the <code>log</code> method will print output to that element when called.</p>
+				<code>log(...output: any[])</code>
 
-				<p>On this page, codebook logs are marked by a 📝 character.</p>
+				<p>If a code block has a log output element, specified via a <code>data-codebook-log</code> attribute with a value matching the <code>id</code> attribute of the log output element, the <code>log</code> method will print output to that element when called.</p>
+
+				<p>Multiple values can be logged, with each value appended to the log after the last. A block's log is cleared before each time its set is run.</p>
+
+				<p>On this page, Codebook logs are marked by a 📝.</p>
 
 				<p>It will attempt to convert <code>Date</code> and <code>Object</code> to strings intelligently, otherwise it will attempt to coerce each value to a string.</p>
 
-				<code>html(string htmlOutput)</code>
+				<h4 id="usage-helper-methods-html">html <a class="anchor" href="#usage-helper-methods-html"></a></h4>
 
-				<p>If a code block has an HTML output element specified via a <code>data-codebook-html</code> attribute with a value matching the <code>id</code> attribute of the log output element, the <code>html</code> method will overwrite that element's inner HTML with whatever custom HTML is passed in as the <code>htmlOutput</code> argument.</p>
+				<code>html(output: string)</code>
 
-				<h4>Global set</h4>
+				<p>If a code block has an HTML output element, specified via a <code>data-codebook-html</code> attribute with a value matching the <code>id</code> attribute of the log output element, the <code>html</code> method will overwrite that element's inner HTML with whatever custom HTML is passed in as the <code>output</code> argument.</p>
 
-				<p>There is a special set with the name <code>global</code>, which can be used to execute code in the global scope. This allows codebook blocks to create variables that can be later used across multiple sets. However, blocks in the global set do not have <code>log</code> or <code>html</code> functions, and do not have access to custom arguments.</p>
+				<h3 id="usage-asynchronous-code">Asynchronous code <a class="anchor" href="#usage-asynchronous-code"></a></h3>
 
-				<h3>Asynchronous code</h3>
+				<p>Particularly because the <code>log</code> and <code>html</code> methods take on different values at different times, any asynchronous code that runs within a Codebook block should finish before the main thread of the code block is finished.</p>
 
-				<p>Particularly because the <code>log</code> and <code>html</code> methods take on different values at different times, any asynchronous functions called within a codebook block should be called using the <code>await</code> keyword, to ensure that all code within the block finished running before the next block runs.</p>
+				<p>This can be accomplished either by using the <code>await</code> keyword whenever calling asynchronous code, or by keeping track of all asynchronous code and using <code>await Promise.all(promises);</code> at the end of a block to wait for all asynchronous code to complete.</p>
 
 				<p>Codebook wraps each block in an <code>async</code> function, so <code>await</code> can be used. As a result, the methods used to run code sets each return a <code>Promise</code>, which resolves when all specified sets have finished running.</p>
 			</div>
 
 			<section>
 				<div class="content">
-					<h2>Methods</h2>
+					<h2 id="methods">Methods <a class="anchor" href="#methods"></a></h2>
 				</div>
 
 				<section>
 					<div class="content">
-						<h3>run</h3>
+						<h3 id="methods-run">run <a class="anchor" href="#methods-run"></a></h3>
 
-						<code>Promise codebook.run(Object? args);</code>
+						<code>codebook.run(args?: Record&lt;string, any&gt;): Promise&lt;void&gt;;</code>
 
-						<p>The <code>run</code> method runs all sets of code on a page. The "global" set of code, if it exists, is always run first. Then any remaining sets are run in the order in which they appear on the page.</p>
+						<p>The <code>run</code> method runs all sets of code on a page, in which they appear on the page.</p>
 
-						<h4>Index</h4>
+						<h4 id="methods-run-index">Index <a class="anchor" href="#methods-run-index"></a></h4>
 
-						<p>Code within a set will run in the order in which it appears in the markup, unless it has a <code>data-codebook-index</code> attribute. This attribute should be an integer, and code with a lower number here will run first. Code blocks with an index will always run before code blocks without an index, and if code blocks have the same index then they will run in the order in which they appear in the markup.</p>
+						<p>Code blocks within a set will run in the order in which they appear in the markup, unless they have a <code>data-codebook-index</code> attribute. This attribute should be a number, and code with a lower number here will run first.</p>
 
-						<h4>Passing arguments</h4>
+						<p>Code blocks with an index will always run before code blocks without an index, and if code blocks have the same index then they will run in the order in which they appear in the markup.</p>
+
+						<h4 id="methods-run-passing-arguments">Passing arguments <a class="anchor" href="#methods-run-passing-arguments"></a></h4>
 
 						<p><code>run</code> takes a single optional argument, which is an <code>Object</code> containing named arguments to be passed to your code. This can be used to expose objects that don't exist on the global scope, such as packages that have been imported into a module.</p>
 
@@ -89,16 +97,21 @@
 								testArg: 'test',
 							});
 						</code>
+
+						<p>Codebook uses some variables to ensure the `log` and `html` methods are available, so these argument names are reserved and cannot be used:</p>
+
+						<p><code>'_log'</code> <code>'_$log'</code> <code>'log'</code> <code>'_html'</code> <code>'_$html'</code> <code>'html'</code></p>
 					</div>
 				</section>
 
 				<section>
 					<div class="content">
-						<h3>runSet</h3>
+						<h3 id="methods-runSet">runSet <a class="anchor" href="#methods-runSet"></a></h3>
 
-						<code>Promise codebook.runSet(string | null setName, Object? args);</code>
+						<code>codebook.runSet(setName: string, args?: Record&lt;string, any&gt;): Promise&lt;void&gt;;</code>
+						<code>codebook.runSet(args?: Record&lt;string, any&gt;): Promise&lt;void&gt;;</code>
 
-						<p>The <code>runSet</code> method allows you to run a specific set of code, instead of all of them. The <code>setName</code> argument should be either a string matching the name of the set, or <code>null</code> to run the "null" set.</p>
+						<p>The <code>runSet</code> method allows you to run a specific set of code, instead of all of them. The <code>setName</code> argument should be a string matching the name of the set, or can be left blank to call the "default" set.</p>
 
 						<code class="code--block js-codebook__inert">
 							codebook.runSet('test', { testArg: 'test2' });
@@ -108,60 +121,76 @@
 
 				<section>
 					<div class="content">
-						<h3>tidy</h3>
+						<h3 id="methods-tidy">tidy <a class="anchor" href="#methods-tidy"></a></h3>
 
-						<code>void codebook.tidy();</code>
+						<code>codebook.tidy(): void;</code>
 
-						<p>The <code>tidy</code> method looks for all codebook code blocks and analyses their shared indentation based on how much the first line of code is indented. Then it strips all lines in that block by the same amount, so code appearing on the page using CSS rules like <code>white-space: pre;</code> won't appear hugely indented, but the source HTML code can still be tidily indented.</p>
+						<p>The <code>tidy</code> method looks for all Codebook code blocks and analyses their shared indentation based on how much the first line of code is indented, expecting indentation to be done with tabs. Then it strips all lines in that block by the same amount of indentation, so code appearing on the page using CSS rules like <code>white-space: pre;</code> won't appear hugely indented, but the source HTML code can still be tidily indented.</p>
 
-						<p>As well as code blocks, the <code>tidy</code> method will also tidy "inert" blocks by looking for elements with a class of <code>js-codebook__inert</code>. These blocks are otherwise ignored by codebook, and it won't try to run any code they contain.</p>
+						<p>As well as code blocks, the <code>tidy</code> method will also tidy "inert" blocks by looking for elements with a class of <code>js-codebook__inert</code>. These blocks are otherwise ignored by Codebook, and it won't try to run any code they contain.</p>
 					</div>
 				</section>
 			</section>
 
 			<section>
 				<div class="content">
-					<h2>Examples</h2>
+					<h2 id="examples">Examples <a class="anchor" href="#examples"></a></h2>
 				</div>
-
-				<section data-codebook-set="global">
-					<div class="content">
-						<h3>Global set</h3>
-
-						<p>This code belongs to the global set, and defines a function to be used later within other sets.</p>
-					</div>
-
-					<script type="text/plain" class="codebook__code js-codebook__code">
-						const globalDouble = (a) => a * 2;
-					</script>
-				</section>
 
 				<section>
 					<div class="content">
-						<h3>Default set</h3>
+						<h3 id="examples-default-set">Default set <a class="anchor" href="#examples-default-set"></a></h3>
 
 						<p>This code block belongs to the default set, and has <code>log</code> and <code>html</code> output elements defined.</p>
 					</div>
 
-					<script type="text/plain" class="codebook__code js-codebook__code" data-codebook-log="log-default-set-example" data-codebook-html="html-default-set-example">
+					<script type="text/plain" class="codebook__code js-codebook__block" data-codebook-log="log-default-set-example" data-codebook-html="html-default-set-example">
+						// Keep track of all asynchronous code that needs to finish
+						const promises = [];
+
 						// Custom argument
 						log(`Custom argument: ${testArg}`);
 
-						// Global function
-						log(`Global function: ${globalDouble(3)}`);
-
-						// Await
-						let json = await fetch('https://jsonplaceholder.typicode.com/todos/1').then(response => response.json());
-						log('Await:', json);
+						// Wait one second, then log the date
+						promises.push((() => {
+							return new Promise((resolve, reject) => {
+								window.setTimeout(() => {
+									log(new Date());
+									resolve();
+								}, 1000);
+							});
+						})());
 
 						// Custom markup
 						let markup = `<button type="button">Arbitrary markup</button>`;
 						html(markup);
+
+						// Add an await at the end to ensure the whole block finishes before the next one starts
+						await Promise.all(promises);
 					</script>
 
 					<samp class="codebook__log" id="log-default-set-example"></samp>
 
 					<div id="html-default-set-example"></div>
+				</section>
+
+				<section class="js-codebook__set" data-codebook-set="test">
+					<div class="content">
+						<h3 id="examples-named-set">Named set <a class="anchor" href="#examples-named-set"></a></h3>
+
+						<p>This code belongs to a set with the name "test". You can edit the code in its only block, then re-run it by pressing a button.</p>
+					</div>
+
+					<script type="text/plain" class="codebook__code js-codebook__block" contenteditable="true" data-codebook-log="log-test-set-example" data-codebook-html="html-test-set-example">
+						log('You can edit this.');
+					</script>
+
+					<button class="js-run-test-set">Run "test" set</button>
+					<button class="js-run-all-sets">Run all sets</button>
+
+					<samp class="codebook__log" id="log-test-set-example"></samp>
+
+					<div id="html-test-set-example"></div>
 				</section>
 			</section>
 		</section>
