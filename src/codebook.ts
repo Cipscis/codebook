@@ -191,7 +191,6 @@ function _runSet(set: CodebookSet) {
 	const args = set.args;
 	const [argNames, argValues] = _spreadArgs(args);
 
-	console.log(argNames);
 	if (
 		argNames.includes('_log') ||
 		argNames.includes('_$log') ||
