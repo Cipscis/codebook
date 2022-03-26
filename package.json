@@ -1,6 +1,6 @@
 {
 	"name": "@cipscis/codebook",
-	"version": "2.0.0",
+	"version": "2.0.1",
 	"description": "Execute code that is also shown to the user embedded in an HTML page.",
 	"browser": "./dist/codebook.js",
 	"type": "module",
@@ -24,8 +24,6 @@
 	"devDependencies": {
 		"gulp": "^4.0.2",
 		"typescript": "^4.3.5",
-		"jasmine": "^3.7.0",
-		"@types/jasmine": "^3.8.2",
 		"sass": "^1.34.1",
 		"gulp-sass": "^5.0.0",
 		"webpack": "^5.40.0",

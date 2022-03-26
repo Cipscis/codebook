@@ -2,6 +2,16 @@
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.0.1 - 2022-03-26
+
+### Changed
+
+* Updated Readme to reflect npm installation instructions
+
+### Removed
+
+* Removed Jasmine as a dependency
+
 ## 2.0.0 - 2022-03-26
 
 ### Changed
