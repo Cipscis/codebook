@@ -72,6 +72,20 @@ a[href^=tel]:after {
   margin-bottom: 0;
 }
 
+.content p a,
+.p a,
+.a {
+  color: #0000EE;
+}
+
+.anchor {
+  text-decoration: none;
+}
+.anchor::before {
+  content: "🔗";
+  speak: never;
+}
+
 .content code,
 .code {
   display: inline-block;
