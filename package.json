@@ -2,7 +2,6 @@
 	"name": "@cipscis/codebook",
 	"version": "2.0.0",
 	"description": "Execute code that is also shown to the user embedded in an HTML page.",
-	"private": true,
 	"browser": "./dist/codebook.js",
 	"type": "module",
 	"files": [
